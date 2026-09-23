@@ -7,17 +7,13 @@ import { fileURLToPath } from 'node:url';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const json = (value) => JSON.stringify(value, null, 2) + '\n';
-const immutable = 'public, max-age=31536000, immutable';
-const headerRule = (source, headers) => ({ source, headers: Object.entries(headers).map(([key, value]) => ({ key, value })) });
-export const controls = {
-  'index.html': '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex"><title>HKTS3 assets</title><p>Static assets for HKTS3.</p></html>\n',
-  '404.html': '<!doctype html><html lang="en"><meta charset="utf-8"><title>Not found</title><p>Not found.</p></html>\n',
-  'edgeone.json': json({ headers: [
-    headerRule('/*', { 'Cross-Origin-Resource-Policy': 'cross-origin', 'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex' }),
-    ...['webp', 'png', 'jpg', 'jpeg', 'avif'].map((ext) => headerRule(`/*.${ext}`, { 'Cache-Control': immutable })),
-    ...['/', '/index.html', '/404.html', '/edgeone.json'].map((path) => headerRule(path, { 'Cache-Control': 'no-store' })),
-  ] }),
-};
+// Project guardrails, not a promise about the public mirror's quotas.
+const maxImageBytes = 20 * 1024 * 1024;
+const maxTotalBytes = 50 * 1024 * 1024;
+export function baseForCommit(commit) {
+  if (!/^[a-f0-9]{40}$/.test(commit)) throw new Error('A full 40-character Git commit is required');
+  return `https://cdn.jsdmirror.com/gh/Fantasyguide/hkts3-assets@${commit}/public/`;
+}
 
 export async function walk(directory, prefix = '') {
   if (!(await lstat(directory)).isDirectory()) throw new Error(`Not a real directory: ${directory}`);
@@ -38,7 +34,7 @@ function assertImage(file, bytes) {
     : ext === 'png' ? bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex'))
     : ['jpg', 'jpeg'].includes(ext) ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
     : bytes.toString('ascii', 4, 8) === 'ftyp' && /avif|avis/.test(bytes.toString('ascii', 8, 32));
-  if (!magic || sha256(bytes) !== file.sha256 || bytes.length !== file.bytes || bytes.length > 25 * 1024 * 1024) {
+  if (!magic || sha256(bytes) !== file.sha256 || bytes.length !== file.bytes || bytes.length > maxImageBytes) {
     throw new Error(`Image content/hash/size mismatch: ${file.path}`);
   }
 }
@@ -63,12 +59,9 @@ export async function validate(directory, { bundle = false } = {}) {
     if (!actual.includes(file.path)) throw new Error(`Missing image: ${file.path}`);
     assertImage(file, await readFile(join(publicRoot, file.path)));
   }
-  const expected = [...seen, ...(bundle ? ['manifest.json'] : Object.keys(controls))].sort();
+  const expected = [...seen, ...(bundle ? ['manifest.json'] : [])].sort();
   if (JSON.stringify(actual) !== JSON.stringify(expected)) throw new Error('Unlisted or missing public files');
-  if (actual.length > 20000) throw new Error('Too many files');
-  if (!bundle) for (const [path, content] of Object.entries(controls)) {
-    if (await readFile(join(publicRoot, path), 'utf8') !== content) throw new Error(`Unexpected hosting config: ${path}`);
-  }
+  if (manifest.files.reduce((n, file) => n + file.bytes, 0) > maxTotalBytes) throw new Error('Project image budget exceeds 50 MiB');
   return manifest;
 }
 
@@ -97,7 +90,6 @@ export async function sync(bundle, repository = root, { apply = false } = {}) {
       await writeFile(destination, await readFile(join(bundle, file.path)), { flag: 'wx' });
     }
     await mkdir(join(repository, 'public'), { recursive: true });
-    for (const [name, content] of Object.entries(controls)) await writeFile(join(repository, 'public', name), content);
     const manifest = { schemaVersion: 1, event: 'hkts3', files: [...merged.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     await writeFile(join(repository, 'manifest.json.tmp'), json(manifest));
     await rename(join(repository, 'manifest.json.tmp'), join(repository, 'manifest.json'));
@@ -116,7 +108,7 @@ export async function pack(repository = root) {
   await mkdir(join(repository, 'dist'), { recursive: true });
   await mkdir(directory); // Never overwrite an earlier artifact.
   const archive = join(directory, 'public.zip');
-  // Git archive strips public/ so index.html and edgeone.json are at ZIP root.
+  // Portable backup of images only; the mirror serves the Git commit directly.
   execFileSync('git', ['archive', '--format=zip', `--output=${archive}`, 'HEAD:public'], { cwd: repository });
   const bytes = await readFile(archive);
   const receipt = { commit, archive: 'public.zip', sha256: sha256(bytes), bytes: bytes.length,
@@ -127,18 +119,20 @@ export async function pack(repository = root) {
 
 // Small, sequential correctness check against the dedicated CDN only; no load test.
 export async function verify(baseUrl, manifest, fetcher = fetch) {
-  if (baseUrl !== 'https://riddle-assets.fantasyguide.cn/') throw new Error('Only the dedicated CDN is allowed');
+  if (!/^https:\/\/cdn\.jsdmirror\.com\/gh\/Fantasyguide\/hkts3-assets@[a-f0-9]{40}\/public\/$/.test(baseUrl)) throw new Error('Only the dedicated CDN repository at a fixed commit is allowed');
   const results = [];
   for (const file of manifest.files) {
     const start = performance.now();
     const response = await fetcher(new URL(file.path, baseUrl), { redirect: 'error', signal: AbortSignal.timeout(15000), credentials: 'omit' });
     const bytes = Buffer.from(await response.arrayBuffer());
     if (response.status !== 200 || !response.headers.get('content-type')?.startsWith('image/')
-      || response.headers.get('cache-control') !== immutable
+      || !/(?:^|[,\s])max-age=31536000(?:[,\s]|$)/.test(response.headers.get('cache-control') || '')
+      || /no-store|no-cache|private/.test(response.headers.get('cache-control') || '')
       || response.headers.get('cross-origin-resource-policy') !== 'cross-origin'
       || response.headers.has('set-cookie')) throw new Error(`CDN status/headers mismatch: ${file.path}`);
     assertImage(file, bytes);
-    results.push({ path: file.path, bytes: bytes.length, milliseconds: Math.round(performance.now() - start) });
+    results.push({ path: file.path, bytes: bytes.length, sha256: sha256(bytes), milliseconds: Math.round(performance.now() - start),
+      cacheControl: response.headers.get('cache-control'), cacheStatus: response.headers.get('eo-cache-status') });
   }
   const missing = await fetcher(new URL(`__missing-${Date.now()}.webp`, baseUrl), { redirect: 'error', signal: AbortSignal.timeout(15000), credentials: 'omit' });
   await missing.arrayBuffer();
@@ -155,12 +149,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const manifest = await validate(root);
       result = { valid: true, images: manifest.files.length, bytes: manifest.files.reduce((sum, file) => sum + file.bytes, 0) };
     } else if (command === 'pack' && !args.length) result = await pack();
-    else if (command === 'verify' && !args.length) {
-      const config = JSON.parse(await readFile(join(root, 'deployment.json'), 'utf8'));
-      result = await verify(config.baseUrl, await validate(root));
+    else if ((command === 'base' || command === 'verify') && args.length === 1) {
+      const baseUrl = baseForCommit(args[0]);
+      if (command === 'base') { console.log(baseUrl); process.exit(0); }
+      const manifest = JSON.parse(execFileSync('git', ['show', `${args[0]}:manifest.json`], { cwd: root, encoding: 'utf8' }));
+      result = await verify(baseUrl, manifest);
       await mkdir(join(root, 'dist'), { recursive: true });
       await writeFile(join(root, 'dist', `verify-${Date.now()}.json`), json(result));
-    } else throw new Error('Usage: assets.mjs import <export> [--apply] | check | pack | verify');
+    } else throw new Error('Usage: assets.mjs import <export> [--apply] | check | pack | base <commit> | verify <commit>');
     console.log(json(result));
   } catch (error) { console.error(error.message); process.exitCode = 1; }
 }

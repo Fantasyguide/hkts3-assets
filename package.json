@@ -10,9 +10,7 @@
     "check": "node scripts/assets.mjs check",
     "test": "node --test test/*.test.mjs",
     "pack": "node scripts/assets.mjs pack",
-    "verify:cdn": "node scripts/assets.mjs verify"
-  },
-  "devDependencies": {
-    "@edgeone/makers-sdk": "0.1.0"
+    "verify:cdn": "node scripts/assets.mjs verify",
+    "cdn:base": "node scripts/assets.mjs base"
   }
 }

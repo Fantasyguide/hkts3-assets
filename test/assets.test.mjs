@@ -4,8 +4,7 @@ import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/pr
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { root, sync, validate, verify, pack, sha256 } from '../scripts/assets.mjs';
-import { selectProject } from '../scripts/publish.mjs';
+import { root, sync, validate, verify, pack, sha256, baseForCommit } from '../scripts/assets.mjs';
 
 async function fixture(t) {
   const dir = await mkdtemp(join(tmpdir(), 'hkts3-assets-test-'));
@@ -15,7 +14,7 @@ async function fixture(t) {
   return dir;
 }
 
-test('prepared public directory contains only validated images and hosting controls', async () => {
+test('prepared public directory contains only validated images', async () => {
   const manifest = await validate(root);
   assert.ok(manifest.files.length > 0);
   assert.ok(manifest.files.reduce((sum, file) => sum + file.bytes, 0) > 0);
@@ -67,7 +66,8 @@ test('archive contains public assets only and refuses uncommitted edits', async 
   const result = await pack(dir);
   const entries = execFileSync('python3', ['-c', 'import sys,zipfile,json; print(json.dumps(zipfile.ZipFile(sys.argv[1]).namelist()))', join(result.directory, 'public.zip')], { encoding: 'utf8' });
   const names = JSON.parse(entries);
-  assert.ok(names.includes('index.html')); assert.ok(names.includes('edgeone.json'));
+  assert.equal(names.filter(name => name.endsWith('.webp')).length, 20);
+  assert.ok(!names.some(name => name.endsWith('.html') || name.endsWith('.json')));
   assert.ok(!names.some((name) => name.startsWith('public/') || name.includes('private') || name.includes('manifest')));
   await writeFile(join(dir, 'private.key'), 'changed');
   await assert.rejects(() => pack(dir), /pending changes/);
@@ -76,33 +76,26 @@ test('archive contains public assets only and refuses uncommitted edits', async 
 test('CDN probe checks content and missing-image status without following redirects or querying the app', async () => {
   const manifest = await validate(root); const paths = [];
   const fetcher = async (url, options) => {
-    assert.equal(url.hostname, 'riddle-assets.fantasyguide.cn');
+    assert.equal(url.hostname, 'cdn.jsdmirror.com');
     assert.equal(options.redirect, 'error'); assert.equal(options.credentials, 'omit');
     paths.push(url.pathname);
-    const file = manifest.files.find((entry) => `/${entry.path}` === url.pathname);
+    const file = manifest.files.find((entry) => url.pathname.endsWith('/public/' + entry.path));
     if (!file) return new Response('Not found', { status: 404 });
     return new Response(await readFile(join(root, 'public', file.path)), { headers: {
       'content-type': 'image/webp', 'cache-control': 'public, max-age=31536000, immutable', 'cross-origin-resource-policy': 'cross-origin',
     } });
   };
-  assert.equal((await verify('https://riddle-assets.fantasyguide.cn/', manifest, fetcher)).results.length, manifest.files.length);
+  assert.equal((await verify(baseForCommit('a'.repeat(40)), manifest, fetcher)).results.length, manifest.files.length);
   assert.equal(paths.length, manifest.files.length + 1);
   await assert.rejects(() => verify('https://riddle.fantasyguide.cn/', manifest, fetcher), /dedicated CDN/);
 });
 
-test('remote publishing creates mainland only and refuses mismatched or unbound existing projects', async () => {
-  const config = JSON.parse(await readFile(join(root, 'deployment.json'), 'utf8')); config.projectId = null;
-  const creates = [];
-  const client = { projects: {
-    list: async () => ({ items: [] }),
-    create: async (value) => { creates.push(value); return { projectId: 'test-id' }; },
-    get: async () => ({ projectId: 'test-id', name: 'hkts3-assets', area: 'mainland' }),
-  } };
-  assert.equal((await selectProject(client, config)).projectId, 'test-id');
-  assert.deepEqual(creates, [{ name: 'hkts3-assets', area: 'mainland' }]);
-  client.projects.list = async () => ({ items: [{ name: 'hkts3-assets' }] });
-  await assert.rejects(() => selectProject(client, config), /already exists/);
-  config.projectId = 'test-id';
-  client.projects.get = async () => ({ name: 'hkts3-assets', area: 'overseas' });
-  await assert.rejects(() => selectProject(client, config), /mismatch/);
+test('CDN addresses require the correct repository and immutable commit', async () => {
+  assert.throws(() => baseForCommit('main'), /commit/);
+  const manifest = await validate(root);
+  for (const base of ['https://cdn.jsdmirror.com/gh/Fantasyguide/hkts3-assets@main/public/', 'https://cdn.jsdmirror.com/gh/other/repo@' + 'a'.repeat(40) + '/public/']) {
+    await assert.rejects(() => verify(base, manifest, () => { throw new Error('must not fetch'); }), /dedicated CDN/);
+  }
+  const bad = async () => new Response('<html>upstream error</html>', { headers: {'content-type':'text/html'} });
+  await assert.rejects(() => verify(baseForCommit('a'.repeat(40)), manifest, bad), /mismatch/);
 });
