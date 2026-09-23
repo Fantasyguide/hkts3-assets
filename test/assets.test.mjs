@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { root, sync, validate, verify, pack, sha256 } from '../scripts/assets.mjs';
 import { selectProject } from '../scripts/publish.mjs';
@@ -47,7 +47,7 @@ test('import previews without writing and preserves old hashes on image replacem
   const bytes = Buffer.concat([await readFile(join(dir, 'public', file.path)), Buffer.from('new-version')]);
   file.sha256 = sha256(bytes); file.bytes = bytes.length;
   file.path = file.path.replace(/-[a-f0-9]{20}\./, `-${file.sha256.slice(0, 20)}.`);
-  await mkdir(join(bundle, 'Grill-The-Grid', 'characters'), { recursive: true });
+  await mkdir(dirname(join(bundle, file.path)), { recursive: true });
   await writeFile(join(bundle, file.path), bytes);
   await writeFile(join(bundle, 'manifest.json'), JSON.stringify({ schemaVersion: 1, event: 'hkts3', files: [file] }));
   assert.equal((await sync(bundle, dir)).total, manifest.files.length + 1);
