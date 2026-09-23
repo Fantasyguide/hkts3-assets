@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "event": "hkts3",
+  "files": [
+    {
+      "path": "Grill-The-Grid/characters/c01-fe54a4a3c09b84287a69.webp",
+      "bytes": 14374,
+      "sha256": "fe54a4a3c09b84287a696335610b629b4eac30351cd7df7e415584a72beef856",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c01.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c02-39d481a8b33f0b41767d.webp",
+      "bytes": 16344,
+      "sha256": "39d481a8b33f0b41767d180d665c4d8f3e89572a27aec2394562fbd81cf42c67",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c02.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c03-66f38fb33e06e46fff46.webp",
+      "bytes": 16158,
+      "sha256": "66f38fb33e06e46fff4645729b148235f6df3d2f5a2fdd2340934a4a2e3783fe",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c03.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c04-d898758ba14620441ba3.webp",
+      "bytes": 11234,
+      "sha256": "d898758ba14620441ba3e14e8b24690c6e3e9abf09ae9e47b77456fb1cd5cd14",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c04.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c05-b2ee12b81901ab9ee121.webp",
+      "bytes": 15826,
+      "sha256": "b2ee12b81901ab9ee1216b5c2c9a375c24f6990eb619cb8d2bd1f9a3f1b18047",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c05.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c06-173e9d5ca74f65eebd10.webp",
+      "bytes": 16788,
+      "sha256": "173e9d5ca74f65eebd1033da543591bb5cb3aa46aef49416ebeb59feb0222520",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c06.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c07-3644caddc143a098d666.webp",
+      "bytes": 20516,
+      "sha256": "3644caddc143a098d666827a8dcc86d1f6e2a178de7bac73fcd71520dcd09295",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c07.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c08-46e3034db520591fa7ef.webp",
+      "bytes": 18278,
+      "sha256": "46e3034db520591fa7efbb3551d385fa65c74009564ecaf026cb5cb8f0975f53",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c08.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c09-e9633e481ae758fc7ab3.webp",
+      "bytes": 14286,
+      "sha256": "e9633e481ae758fc7ab3aab47462eb7f13af37fd622d431e8c3bc71da236aee0",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c09.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c10-8a0270251ef680ee08b5.webp",
+      "bytes": 14752,
+      "sha256": "8a0270251ef680ee08b54e91bc6f00f3c17e1186c334ed8c4050fd6b5e76bae5",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c10.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c11-d7efc21dd9e47c56026b.webp",
+      "bytes": 14456,
+      "sha256": "d7efc21dd9e47c56026bc7293d6c372999333f17c85225dbd2eba000339f0274",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c11.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c12-9ac97702d62a77544f96.webp",
+      "bytes": 14672,
+      "sha256": "9ac97702d62a77544f96cb7d89fdfd4978b32fb22ea61e163ade7bf027d77b49",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c12.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c13-b19c58551d6485dae6ec.webp",
+      "bytes": 13586,
+      "sha256": "b19c58551d6485dae6ec3ba23ebd5a756000daecfbaa7a40b6e2d24a170d7ce5",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c13.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c14-daeaf4c2800de3379e94.webp",
+      "bytes": 13744,
+      "sha256": "daeaf4c2800de3379e94b20f2e107ca7a4e84b20f9762b94f029a645abd509a0",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c14.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c15-61585f17ac0b6181f0a7.webp",
+      "bytes": 13834,
+      "sha256": "61585f17ac0b6181f0a7bdc888efe243922584110fc8bcc031086d9270a4b6b7",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c15.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c16-a333371251927707a990.webp",
+      "bytes": 17774,
+      "sha256": "a333371251927707a990ee75ed8db9b3642b8aebf77b88fc9761efdb1625a18c",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c16.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c17-6598e1033e40e4ab2da3.webp",
+      "bytes": 16302,
+      "sha256": "6598e1033e40e4ab2da357db7ecbb76cc9684a4bf182eafbfd042f8bf471a207",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c17.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c18-75611f1dfd9e4d3de23b.webp",
+      "bytes": 14978,
+      "sha256": "75611f1dfd9e4d3de23b1cbfa343e0981d99942aaaf949d7eaa1ac2ce72d77e3",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c18.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c19-ef6aac9d96af33ec0135.webp",
+      "bytes": 21170,
+      "sha256": "ef6aac9d96af33ec01357ed1247fa3aac8ed0549aaf5b8c32abc5c033ab2cb05",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c19.webp"
+    },
+    {
+      "path": "Grill-The-Grid/characters/c20-e26ca4a52c9c01364bcd.webp",
+      "bytes": 26636,
+      "sha256": "e26ca4a52c9c01364bcd047770d5c9ceb1253fa5710b50a1a34f0c83d346dbf8",
+      "puzzle": "Grill-The-Grid",
+      "version": "1",
+      "source": "public/characters/c20.webp"
+    }
+  ]
+}
