@@ -127,7 +127,7 @@ export async function pack(repository = root) {
 
 // Small, sequential correctness check against the dedicated CDN only; no load test.
 export async function verify(baseUrl, manifest, fetcher = fetch) {
-  if (baseUrl !== 'https://hkts3-assets.fantasyguide.cn/') throw new Error('Only the dedicated CDN is allowed');
+  if (baseUrl !== 'https://riddle-assets.fantasyguide.cn/') throw new Error('Only the dedicated CDN is allowed');
   const results = [];
   for (const file of manifest.files) {
     const start = performance.now();

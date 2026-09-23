@@ -50,7 +50,7 @@ async function main() {
   // Do not store expiring signed preview URLs or credentials in logs/artifacts.
   console.log(JSON.stringify(record, null, 2));
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY,
-    `## HKTS3 static assets\n\nCommit: \`${record.commit}\`\n\nProject: \`${record.projectId}\` (mainland)\n\nDeployment: \`${record.deploymentId}\` — ${record.status}\n\nImages: ${record.images}, ${record.imageBytes} bytes.\n\nBind \`hkts3-assets.fantasyguide.cn\` in the Tencent Cloud console, then configure its actual CNAME and HTTPS. The riddle application is unchanged.\n`);
+    `## HKTS3 static assets\n\nCommit: \`${record.commit}\`\n\nProject: \`${record.projectId}\` (mainland)\n\nDeployment: \`${record.deploymentId}\` — ${record.status}\n\nImages: ${record.images}, ${record.imageBytes} bytes.\n\nBind \`riddle-assets.fantasyguide.cn\` in the Tencent Cloud console, then configure its actual CNAME and HTTPS. The riddle application is unchanged.\n`);
   if (result.status !== 'Success') throw new Error(`CDN deployment did not succeed: ${result.status}`);
 }
 

@@ -76,7 +76,7 @@ test('archive contains public assets only and refuses uncommitted edits', async 
 test('CDN probe checks content and missing-image status without following redirects or querying the app', async () => {
   const manifest = await validate(root); const paths = [];
   const fetcher = async (url, options) => {
-    assert.equal(url.hostname, 'hkts3-assets.fantasyguide.cn');
+    assert.equal(url.hostname, 'riddle-assets.fantasyguide.cn');
     assert.equal(options.redirect, 'error'); assert.equal(options.credentials, 'omit');
     paths.push(url.pathname);
     const file = manifest.files.find((entry) => `/${entry.path}` === url.pathname);
@@ -85,7 +85,7 @@ test('CDN probe checks content and missing-image status without following redire
       'content-type': 'image/webp', 'cache-control': 'public, max-age=31536000, immutable', 'cross-origin-resource-policy': 'cross-origin',
     } });
   };
-  assert.equal((await verify('https://hkts3-assets.fantasyguide.cn/', manifest, fetcher)).results.length, manifest.files.length);
+  assert.equal((await verify('https://riddle-assets.fantasyguide.cn/', manifest, fetcher)).results.length, manifest.files.length);
   assert.equal(paths.length, manifest.files.length + 1);
   await assert.rejects(() => verify('https://riddle.fantasyguide.cn/', manifest, fetcher), /dedicated CDN/);
 });
